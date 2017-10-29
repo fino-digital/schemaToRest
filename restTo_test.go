@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -40,11 +41,31 @@ func TestFoundFoundRoute(t *testing.T) {
 	testData := []struct {
 		ExpectedStatus int
 		Route          string
-		Body           map[string]interface{}
+		Body           interface{}
 	}{
 		{
 			ExpectedStatus: 200,
 			Route:          "/myRoute/testField",
+			Body:           map[string]interface{}{"test": "test"},
+		},
+		{
+			ExpectedStatus: schemaToRest.HTTPStatusCantUnmarshal,
+			Route:          "/myRoute/testField",
+			Body:           true,
+		},
+		{
+			ExpectedStatus: schemaToRest.HTTPStatusCantResolveMethode,
+			Route:          "/myRoute/withoutResolveMethode",
+			Body:           map[string]interface{}{"test": "test"},
+		},
+		{
+			ExpectedStatus: http.StatusInternalServerError,
+			Route:          "/myRoute/returnError",
+			Body:           map[string]interface{}{"test": "test"},
+		},
+		{
+			ExpectedStatus: schemaToRest.HTTPStatusCantFindFunction,
+			Route:          "/myRoute/fail",
 			Body:           map[string]interface{}{"test": "test"},
 		},
 	}

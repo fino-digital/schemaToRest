@@ -10,8 +10,16 @@ import (
 	"github.com/labstack/echo"
 )
 
-// FunctionParamKey is the param
-const FunctionParamKey = "param"
+const (
+	// FunctionParamKey is the param
+	FunctionParamKey = "param"
+
+	HTTPStatusNoArguments         = 460
+	HTTPStatusCantUnmarshal       = 461
+	HTTPStatusCantResolveMethode  = 462
+	HTTPStatusCantFindFunction    = 463
+	HTTPStatusErrorResolveMethode = 520
+)
 
 // ToRest returns HandlerFunc
 func ToRest(route string, schema graphql.Schema) (string, echo.HandlerFunc) {
@@ -25,17 +33,17 @@ func ToRest(route string, schema graphql.Schema) (string, echo.HandlerFunc) {
 		defer context.Request().Body.Close()
 		bodyByte, err := ioutil.ReadAll(context.Request().Body)
 		if err != nil {
-			return context.JSON(http.StatusBadRequest, "no argments in body")
+			return context.JSON(HTTPStatusNoArguments, "no argments in body")
 		}
 		if err := json.Unmarshal(bodyByte, &bodyMap); err != nil {
-			return context.JSON(http.StatusBadRequest, "can't unmarshal map of arguments")
+			return context.JSON(HTTPStatusCantUnmarshal, "can't unmarshal map of arguments")
 		}
 
 		if field, ok := schema.QueryType().Fields()[function]; ok {
-			resolveParams := graphql.ResolveParams{}
 			if field.Resolve == nil {
-				context.JSON(http.StatusInternalServerError, "Can't find resolve-methode")
+				return context.JSON(HTTPStatusCantResolveMethode, "Can't find resolve-methode")
 			}
+			resolveParams := graphql.ResolveParams{}
 			response, err := field.Resolve(resolveParams)
 			if err != nil {
 				return context.JSON(http.StatusInternalServerError,
@@ -43,6 +51,6 @@ func ToRest(route string, schema graphql.Schema) (string, echo.HandlerFunc) {
 			}
 			return context.JSON(http.StatusOK, response)
 		}
-		return context.JSON(http.StatusBadRequest, fmt.Sprintf("Can't find '%s'", function))
+		return context.JSON(HTTPStatusCantFindFunction, fmt.Sprintf("Can't find '%s'", function))
 	}
 }
