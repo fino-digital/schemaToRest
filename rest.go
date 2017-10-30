@@ -49,7 +49,10 @@ func WrapSchema(schema *graphql.Schema) echo.HandlerFunc {
 			if field.Resolve == nil {
 				return context.JSON(HTTPStatusCantResolveMethode, "Can't find resolve-methode")
 			}
-			resolveParams := graphql.ResolveParams{}
+			resolveParams := graphql.ResolveParams{
+				Context: context.Request().Context(),
+				Args:    *bodyMap,
+			}
 			response, err := field.Resolve(resolveParams)
 			if err != nil {
 				return context.JSON(http.StatusInternalServerError,
