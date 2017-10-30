@@ -5,15 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/graphql-go/graphql"
 	"github.com/labstack/echo"
 )
 
 const (
-	// FunctionParamKey is the param
-	FunctionParamKey = "param"
-
 	HTTPStatusNoArguments         = 460
 	HTTPStatusCantUnmarshal       = 461
 	HTTPStatusCantResolveMethode  = 462
@@ -23,7 +21,7 @@ const (
 
 // ToRest returns HandlerFunc
 func ToRest(route string, schema *graphql.Schema) (string, echo.HandlerFunc) {
-	return fmt.Sprintf("%s/:%s", route, FunctionParamKey), WrapSchema(schema)
+	return "/*", WrapSchema(schema)
 }
 
 // WrapSchema is the plain wrapper.
@@ -31,7 +29,8 @@ func ToRest(route string, schema *graphql.Schema) (string, echo.HandlerFunc) {
 func WrapSchema(schema *graphql.Schema) echo.HandlerFunc {
 	return func(context echo.Context) error {
 		// findout the query-function
-		function := context.Param(FunctionParamKey)
+		split := strings.Split(context.Request().RequestURI, "/")
+		function := split[len(split)-1]
 
 		// get requestBody as Map
 		bodyMap := new(map[string]interface{})
