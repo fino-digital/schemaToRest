@@ -77,7 +77,7 @@ func TestFoundFoundRoute(t *testing.T) {
 	}
 
 	router := echo.New()
-	router.POST(schemaToRest.ToRest("/myRoute", schema))
+	router.POST(schemaToRest.ToRest("/myRoute", &schema))
 
 	// iterate all tests
 	for testIndex, test := range testData {

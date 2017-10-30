@@ -22,8 +22,14 @@ const (
 )
 
 // ToRest returns HandlerFunc
-func ToRest(route string, schema graphql.Schema) (string, echo.HandlerFunc) {
-	return fmt.Sprintf("%s/:%s", route, FunctionParamKey), func(context echo.Context) error {
+func ToRest(route string, schema *graphql.Schema) (string, echo.HandlerFunc) {
+	return fmt.Sprintf("%s/:%s", route, FunctionParamKey), WrapSchema(schema)
+}
+
+// WrapSchema is the plain wrapper.
+// NOTICE: YOUR ROUTE HAVE TO IMPLEMENT THE FunctionParamKey!
+func WrapSchema(schema *graphql.Schema) echo.HandlerFunc {
+	return func(context echo.Context) error {
 		// findout the query-function
 		function := context.Param(FunctionParamKey)
 
