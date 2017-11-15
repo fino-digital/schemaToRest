@@ -1,4 +1,4 @@
-package schemaToRest_test
+package schemaToRest
 
 import (
 	"bytes"
@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/TobiEiss/schemaToRest"
 
 	"github.com/graphql-go/graphql"
 	"github.com/labstack/echo"
@@ -49,12 +47,12 @@ func TestFoundFoundRoute(t *testing.T) {
 			Body:           map[string]interface{}{"test": "test"},
 		},
 		{
-			ExpectedStatus: schemaToRest.HTTPStatusCantUnmarshal,
+			ExpectedStatus: HTTPStatusCantUnmarshal,
 			Route:          "/myRoute/testField",
 			Body:           true,
 		},
 		{
-			ExpectedStatus: schemaToRest.HTTPStatusCantResolveMethode,
+			ExpectedStatus: HTTPStatusCantResolveMethode,
 			Route:          "/myRoute/withoutResolveMethode",
 			Body:           map[string]interface{}{"test": "test"},
 		},
@@ -64,7 +62,7 @@ func TestFoundFoundRoute(t *testing.T) {
 			Body:           map[string]interface{}{"test": "test"},
 		},
 		{
-			ExpectedStatus: schemaToRest.HTTPStatusCantFindFunction,
+			ExpectedStatus: HTTPStatusCantFindFunction,
 			Route:          "/myRoute/fail",
 			Body:           map[string]interface{}{"test": "test"},
 		},
@@ -77,7 +75,7 @@ func TestFoundFoundRoute(t *testing.T) {
 	}
 
 	router := echo.New()
-	router.POST(schemaToRest.ToRest("/myRoute", &schema))
+	router.POST(ToRest("/myRoute", &schema))
 
 	// iterate all tests
 	for testIndex, test := range testData {
