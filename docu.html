@@ -1,0 +1,71 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.34/css/uikit.min.css" />
+    <style>
+        .uk-card {
+            margin-bottom: 20px;
+        }
+
+        .uk-table-without-header {
+            height: 0px;
+        }
+    </style>
+    <script src="https://unpkg.com/vue"></script>
+</head>
+
+<body>
+    <h1>[[.URL]]</h1>
+    [[if .Methodes]] [[range .Methodes]]
+    <div class="uk-section">
+        <div class="uk-container">
+            [[if .Fields]] [[range .Fields]]
+            <div class="uk-card uk-card-default uk-card-small">
+                <div class="uk-card-header">
+                    <h3 class="uk-card-title">/[[.Name]]</h3>
+                </div>
+                <div class="uk-card-body">
+                    [[if .Description]] [[.Description]] [[end]]
+                    <table class="uk-table">
+                        <thead class="uk-table-without-header">
+                            <tr>
+                                <th class="uk-table-shrink"></th>
+                                <th class="uk-table-expand"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <h4>Response:</h4>
+                            [[if .Type]]
+                            <div>Response-Type: [[.Type]]</div>
+                            [[end]] [[if .Description]]
+                            <div>Description:[[.Description]]</div>
+                            [[end]]
+                        </tbody>
+                    </table>
+                    [[if .Args]]
+                    <table class="uk-table">
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>DefaultValue</th>
+                            <th>Description</th>
+                        </tr>
+                        [[range .Args]]
+                        <tr>
+                            <td>[[.Type]]</td>
+                            <td>[[.Name]]</td>
+                            <td>[[.DefaultValue]]</td>
+                            <td>[[.Description]]</td>
+                        </tr>
+                        [[end]]
+                    </table>
+                    [[end]]
+                </div>
+            </div>
+            [[end]] [[end]]
+        </div>
+    </div>
+    [[end]] [[end]]
+</body>
+
+</html>

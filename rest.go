@@ -3,7 +3,10 @@ package schemaToRest
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
@@ -61,4 +64,56 @@ func WrapSchema(schema *graphql.Schema) echo.HandlerFunc {
 		}
 		return context.JSON(HTTPStatusCantFindFunction, fmt.Sprintf("Can't find '%s'", function))
 	}
+}
+
+// DeliverDocu delivers the docu
+func DeliverDocu(schema *graphql.Schema, url string) echo.HandlerFunc {
+	return func(context echo.Context) error {
+		data := map[string]interface{}{
+			"URL": url,
+		}
+
+		// add methodes
+		type methode struct {
+			Methode string
+			Fields  graphql.FieldDefinitionMap
+		}
+		methodes := []methode{}
+
+		if schema.QueryType().Fields() != nil {
+			methodes = append(methodes, methode{Methode: "Queries", Fields: schema.QueryType().Fields()})
+		}
+		if schema.MutationType() != nil {
+			methodes = append(methodes, methode{Methode: "Mutations", Fields: schema.MutationType().Fields()})
+		}
+
+		log.Println(schema.TypeMap())
+
+		data["Methodes"] = methodes
+		return context.Render(http.StatusOK, "docu.html", data)
+	}
+}
+
+// GetTemplateRenderer returns a new TemplateRenderer
+func GetTemplateRenderer() *TemplateRenderer {
+	return &TemplateRenderer{}
+}
+
+// TemplateRenderer is a custom html/template renderer for Echo framework
+type TemplateRenderer struct{}
+
+// Render renders a template document
+func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+
+	// Add global methods if data is a map
+	if viewContext, isMap := data.(map[string]interface{}); isMap {
+		viewContext["reverse"] = c.Echo().Reverse
+	}
+
+	tmpl, err := template.New(name).Delims("[[", "]]").ParseFiles(name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+	}
+
+	return tmpl.ExecuteTemplate(w, name, data)
 }
