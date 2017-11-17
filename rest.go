@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/graphql-go/graphql"
@@ -28,7 +29,6 @@ func ToRest(route string, schema *graphql.Schema) (string, echo.HandlerFunc) {
 }
 
 // WrapSchema is the plain wrapper.
-// NOTICE: YOUR ROUTE HAVE TO IMPLEMENT THE FunctionParamKey!
 func WrapSchema(schema *graphql.Schema) echo.HandlerFunc {
 	return func(context echo.Context) error {
 		// findout the query-function
@@ -110,10 +110,27 @@ func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c 
 		viewContext["reverse"] = c.Echo().Reverse
 	}
 
-	tmpl, err := template.New(name).Delims("[[", "]]").ParseFiles(name)
+	// tmpl, err := template.New(name).Delims("[[", "]]").ParseFiles(name)
+	tmpl, err := fetchTemplate(name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 	}
 
 	return tmpl.ExecuteTemplate(w, name, data)
+}
+
+func fetchTemplate(name string) (*template.Template, error) {
+	tmpl := template.New(name).Delims("[[", "]]")
+	if _, err := os.Stat(name); os.IsNotExist(err) {
+		response, err := http.Get("https://raw.githubusercontent.com/fino-digital/schemaToRest/master/docu.html")
+		if err != nil {
+			log.Println(err)
+		}
+
+		defer response.Body.Close()
+		bodyBytes, err := ioutil.ReadAll(response.Body)
+
+		return tmpl.Parse(string(bodyBytes))
+	}
+	return tmpl.ParseFiles(name)
 }

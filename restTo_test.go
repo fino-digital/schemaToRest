@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/graphql-go/graphql"
+	"github.com/graphql-go/graphql/testutil"
 	"github.com/labstack/echo"
 )
 
@@ -17,16 +18,19 @@ var TestSchemaConfig = graphql.SchemaConfig{
 		Name: "testQuery",
 		Fields: graphql.Fields{
 			"testField": &graphql.Field{
-				Type: graphql.String,
+				Type:        graphql.String,
+				Description: "Description1",
 				Resolve: func(param graphql.ResolveParams) (interface{}, error) {
 					return "Hello", nil
 				},
 			},
 			"withoutResolveMethode": &graphql.Field{
-				Type: graphql.String,
+				Type:        graphql.String,
+				Description: "Description2",
 			},
 			"returnError": &graphql.Field{
-				Type: graphql.String,
+				Type:        graphql.String,
+				Description: "Description3",
 				Resolve: func(param graphql.ResolveParams) (interface{}, error) {
 					return "Hello", errors.New("Error")
 				},
