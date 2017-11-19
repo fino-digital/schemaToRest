@@ -11,7 +11,7 @@
             height: 0px;
         }
     </style>
-    <script src="https://unpkg.com/vue"></script>
+    <!--<script src="https://unpkg.com/vue"></script>-->
 </head>
 
 <body>
@@ -26,23 +26,29 @@
                 </div>
                 <div class="uk-card-body">
                     [[if .Description]] [[.Description]] [[end]]
+                    <h4>Response:</h4>
+                    [[if .Type]]
+                    <div>Response-Type: [[.Type]]</div>
+                    [[end]] [[if .Description]]
+                    <div>Description:[[.Description]]</div>
+                    [[end]] [[if .Types]]
                     <table class="uk-table">
-                        <thead class="uk-table-without-header">
-                            <tr>
-                                <th class="uk-table-shrink"></th>
-                                <th class="uk-table-expand"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <h4>Response:</h4>
-                            [[if .Type]]
-                            <div>Response-Type: [[.Type]]</div>
-                            [[end]] [[if .Description]]
-                            <div>Description:[[.Description]]</div>
-                            [[end]]
-                        </tbody>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                        </tr>
+                        [[range .Types]]
+                        <tr>
+                            <td>[[.name]]</td>
+                            <td>[[.type.name]]</td>
+                        </tr>
+                        [[end]]
                     </table>
+                    [[end]]
+
+                    
                     [[if .Args]]
+                    <h4>Arguments</h4>
                     <table class="uk-table">
                         <tr>
                             <th>Name</th>

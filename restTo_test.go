@@ -100,3 +100,29 @@ func TestFoundFoundRoute(t *testing.T) {
 		}
 	}
 }
+
+func TestDocu(t *testing.T) {
+	// build TestSchema
+	schema := testutil.TestSchema
+
+	router := echo.New()
+	router.Renderer = GetTemplateRenderer()
+	router.GET("/docu", DeliverDocu(schema, "http://example.com/v0/api1"))
+
+	router.Logger.Fatal(router.Start(":8080"))
+}
+
+func TestDocuReq(t *testing.T) {
+	// build TestSchema
+	schema := testutil.TestSchema
+
+	router := echo.New()
+	router.Renderer = GetTemplateRenderer()
+	req := httptest.NewRequest(echo.GET, "/", nil)
+	rec := httptest.NewRecorder()
+	context := router.NewContext(req, rec)
+
+	if err := DeliverDocu(schema, "http://example.com/v0/docu")(context); err != nil {
+		t.Errorf("err: %s body: %s", err, rec.Body.String())
+	}
+}

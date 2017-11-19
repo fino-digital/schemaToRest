@@ -69,27 +69,11 @@ func WrapSchema(schema *graphql.Schema) echo.HandlerFunc {
 // DeliverDocu delivers the docu
 func DeliverDocu(schema *graphql.Schema, url string) echo.HandlerFunc {
 	return func(context echo.Context) error {
-		data := map[string]interface{}{
-			"URL": url,
+		data, err := introspectSchema(*schema)
+		if err != nil {
+			return err
 		}
-
-		// add methodes
-		type methode struct {
-			Methode string
-			Fields  graphql.FieldDefinitionMap
-		}
-		methodes := []methode{}
-
-		if schema.QueryType().Fields() != nil {
-			methodes = append(methodes, methode{Methode: "Queries", Fields: schema.QueryType().Fields()})
-		}
-		if schema.MutationType() != nil {
-			methodes = append(methodes, methode{Methode: "Mutations", Fields: schema.MutationType().Fields()})
-		}
-
-		log.Println(schema.TypeMap())
-
-		data["Methodes"] = methodes
+		data["URL"] = url
 		return context.Render(http.StatusOK, "docu.html", data)
 	}
 }
