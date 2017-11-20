@@ -25,12 +25,14 @@
                     <h3 class="uk-card-title">/[[.Name]]</h3>
                 </div>
                 <div class="uk-card-body">
-                    [[if .Description]] [[.Description]] [[end]]
-                    <h4>Response:</h4>
-                    [[if .Type]]
-                    <div>Response-Type: [[.Type]]</div>
-                    [[end]] [[if .Description]]
-                    <div>Description:[[.Description]]</div>
+                    [[if .Description]]
+                    <div> [[.Description]] </div>
+                    [[end]]
+
+                    <!-- OUTPUT-->
+                    <h4>Response [[.Type]]: </h4>
+                    [[if .Description]]
+                    <p class="uk-article-meta">[[.Description]]</p>
                     [[end]] [[if .Types]]
                     <table class="uk-table">
                         <tr>
@@ -46,22 +48,18 @@
                     </table>
                     [[end]]
 
-                    
-                    [[if .Args]]
+                    <!-- INPUT -->
+                    [[if .Arguments]]
                     <h4>Arguments</h4>
                     <table class="uk-table">
                         <tr>
                             <th>Name</th>
                             <th>Type</th>
-                            <th>DefaultValue</th>
-                            <th>Description</th>
                         </tr>
-                        [[range .Args]]
+                        [[range .Arguments]]
                         <tr>
-                            <td>[[.Type]]</td>
-                            <td>[[.Name]]</td>
-                            <td>[[.DefaultValue]]</td>
-                            <td>[[.Description]]</td>
+                            <td>[[.name]]</td>
+                            <td>[[.type.name]]</td>
                         </tr>
                         [[end]]
                     </table>

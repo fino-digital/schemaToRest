@@ -3,52 +3,64 @@ package schemaToRest
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"regexp"
 
 	"github.com/Jeffail/gabs"
 	"github.com/graphql-go/graphql"
 )
 
+type Field struct {
+	graphql.FieldDefinition
+	Types     []interface{}
+	Arguments []interface{}
+}
+type methode struct {
+	Methode string
+	Fields  []Field
+}
+
 func introspectSchema(schema graphql.Schema) (map[string]interface{}, error) {
 	data := map[string]interface{}{}
-
 	// add methodes
-	type Field struct {
-		graphql.FieldDefinition
-		Types []interface{}
-	}
-	type methode struct {
-		Methode string
-		Fields  []Field
-	}
 	methodes := []methode{}
 
-	introspecType := func(fieldDefinitionMap graphql.FieldDefinitionMap) []Field {
+	// function to introspec a methode
+	introspecMethode := func(fieldDefinitionMap graphql.FieldDefinitionMap) []Field {
 		fields := []Field{}
 		for _, field := range fieldDefinitionMap {
-			params := graphql.Params{Schema: schema, RequestString: inspectType(field.Type.Name())}
-			result := graphql.Do(params)
-			dataByte, _ := json.Marshal(result.Data)
-			dataParsed, _ := gabs.ParseJSON(dataByte)
-			if typFields, ok := dataParsed.Path("__type.fields").Data().([]interface{}); ok {
-				fields = append(fields, Field{*field, typFields})
+			newField := Field{FieldDefinition: *field}
+			// output
+			if typFields, ok := inspectType(schema, field.Type.String()); ok {
+				newField.Types = typFields
 			}
+			// input
+			for _, argument := range field.Args {
+				if argumentFields, ok := inspectType(schema, argument.Type.Name()); ok {
+					newField.Arguments = argumentFields
+				}
+			}
+			fields = append(fields, newField)
 		}
 		return fields
 	}
 
 	if schema.QueryType().Fields() != nil {
-		methodes = append(methodes, methode{Methode: "Queries", Fields: introspecType(schema.QueryType().Fields())})
+		methodes = append(methodes, methode{Methode: "Queries", Fields: introspecMethode(schema.QueryType().Fields())})
 	}
 	if schema.MutationType() != nil {
-		methodes = append(methodes, methode{Methode: "Mutations", Fields: introspecType(schema.MutationType().Fields())})
+		methodes = append(methodes, methode{Methode: "Mutations", Fields: introspecMethode(schema.MutationType().Fields())})
 	}
+
 	data["Methodes"] = methodes
 
 	return data, nil
 }
 
-func inspectType(typ string) string {
-	return fmt.Sprintf(`query{
+func inspectType(schema graphql.Schema, typ string) ([]interface{}, bool) {
+	reg, _ := regexp.Compile("[^a-zA-Z0-9]+")
+	typ = reg.ReplaceAllString(typ, "")
+	introspectionQuery := fmt.Sprintf(`query{
         __type(name: "%s") {
             name
             fields {
@@ -63,5 +75,16 @@ func inspectType(typ string) string {
             }
             }
         }
-      }`, typ)
+	  }`, typ)
+
+	params := graphql.Params{Schema: schema, RequestString: introspectionQuery}
+	result := graphql.Do(params)
+	dataByte, _ := json.Marshal(result.Data)
+	dataParsed, _ := gabs.ParseJSON(dataByte)
+	log.Println(string(dataByte))
+
+	log.Println(typ)
+
+	fields, ok := dataParsed.Path("__type.fields").Data().([]interface{})
+	return fields, ok
 }
