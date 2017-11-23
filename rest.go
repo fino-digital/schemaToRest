@@ -38,13 +38,17 @@ func WrapSchema(schema *graphql.Schema) echo.HandlerFunc {
 		// get requestBody as Map
 		bodyMap := new(map[string]interface{})
 
-		defer context.Request().Body.Close()
-		bodyByte, err := ioutil.ReadAll(context.Request().Body)
-		if err != nil {
-			return context.JSON(HTTPStatusNoArguments, "no argments in body")
-		}
-		if err := json.Unmarshal(bodyByte, &bodyMap); err != nil {
-			return context.JSON(HTTPStatusCantUnmarshal, "can't unmarshal map of arguments")
+		if context.Request().Method == echo.POST {
+			defer context.Request().Body.Close()
+			bodyByte, err := ioutil.ReadAll(context.Request().Body)
+			if err != nil {
+				return context.JSON(HTTPStatusNoArguments, "no argments in body")
+			}
+			if err := json.Unmarshal(bodyByte, &bodyMap); err != nil {
+				return context.JSON(HTTPStatusCantUnmarshal, "can't unmarshal map of arguments")
+			}
+		} else {
+			bodyMap = &map[string]interface{}{}
 		}
 
 		if field, ok := schema.QueryType().Fields()[function]; ok {
